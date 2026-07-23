@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "_2PeopleTB.AzureFunctions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7168",
+      "launchBrowser": false
+    }
+  }
+}

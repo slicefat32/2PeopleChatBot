@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="2PeopleTB.AzureFunctions/2PeopleTB.AzureFunctions.csproj" Id="9246c95f-8027-4610-8b22-2f84f05bc975" />
+  <Project Path="2PeopleTB.DAL/2PeopleTB.DAL.csproj" Id="e806e1ef-255b-470b-b25b-f9eeeb271df7" />
+  <Project Path="2PeopleTelegramBot/2PeopleTelegramBot.csproj" />
+</Solution>

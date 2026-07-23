@@ -1,0 +1,12 @@
+{
+	"IsEncrypted": false,
+	"Values": {
+		"AzureWebJobsStorage": "UseDevelopmentStorage=true",
+		"FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+		"BotConfiguration:BotToken": "YOUR_TELEGRAM_BOT_TOKEN",
+		"BotConfiguration:AdminChatIds:0": "123456789",
+		"BotConfiguration:AdminChatIds:1": "987654321",
+		"ConnectionStrings:DefaultConnection": "Server=(local);Database=TelegramBotDb;Trusted_Connection=True;TrustServerCertificate=True;",
+		"APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=YOUR_INSTRUMENTATION_KEY"
+	}
+}

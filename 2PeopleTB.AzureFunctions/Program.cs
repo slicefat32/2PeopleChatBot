@@ -21,6 +21,8 @@ var botToken = builder.Configuration["BotConfiguration:BotToken"]!;
 var adminChatIds = builder.Configuration.GetSection("BotConfiguration:AdminChatIds").Get<List<long>>() ?? new List<long>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
+Console.WriteLine("Connection:");
+Console.WriteLine(connectionString);
 // Database
 builder.Services.AddDbContext<TelegramBotDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -58,7 +60,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotDbContext>();
-    //await dbContext.Database.EnsureCreatedAsync();
+    await dbContext.Database.EnsureCreatedAsync();
 }
 
 app.Run();

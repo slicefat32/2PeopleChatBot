@@ -65,7 +65,7 @@ using (var scope = app.Services.CreateScope())
 
         Console.WriteLine(connectionString);
 
-        await dbContext.Database.OpenConnectionAsync();
+        await dbContext.Database.EnsureCreatedAsync();
 
         Console.WriteLine("DB OK");
     }

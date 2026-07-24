@@ -59,8 +59,21 @@ var app = builder.Build();
 // Ensure database is created
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotDbContext>();
-    await dbContext.Database.EnsureCreatedAsync();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotDbContext>();
+
+        Console.WriteLine(connectionString);
+
+        await dbContext.Database.OpenConnectionAsync();
+
+        Console.WriteLine("DB OK");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.ToString());
+        throw;
+    }
 }
 
 app.Run();

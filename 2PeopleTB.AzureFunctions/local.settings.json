@@ -6,6 +6,7 @@
     "BotConfiguration:BotToken": "8847702084:AAGt_fDEU3mbw16TQRVL1Qcwnb5KiPljpII",
     "BotConfiguration:AdminChatIds:0": "6520341847",
     "BotConfiguration:AdminChatIds:1": "617091159",
+    "BotConfiguration:AdminChatIds:2": "7492731882",
     "ConnectionStrings:DefaultConnection": "Server=(local);Database=TelegramBotDb;Trusted_Connection=True;TrustServerCertificate=True;"
   }
 }

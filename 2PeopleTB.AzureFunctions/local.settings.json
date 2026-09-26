@@ -3,7 +3,7 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "BotConfiguration:BotToken": "8847702084:AAGt_fDEU3mbw16TQRVL1Qcwnb5KiPljpII",
+    "BotConfiguration:BotToken": "8814431916:AAHGUt8KPiiTzhqb9LOA-EmDB43MgZVUpjw",
     "BotConfiguration:AdminChatIds:0": "6520341847",
     "BotConfiguration:AdminChatIds:1": "617091159",
     "BotConfiguration:AdminChatIds:2": "7492731882",

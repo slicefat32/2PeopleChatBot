@@ -55,7 +55,16 @@ public class TelegramWebhook
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "❌ Помилка обробки webhook");
+            // Логируем детальную информацию об ошибке, включая внутреннее исключение
+            _logger.LogError(ex, "❌ Помилка обробки webhook. Повідомлення: {Message} | Inner: {InnerMessage}",
+                ex.Message,
+                ex.InnerException?.Message);
+
+            // Если это ошибка от Telegram API, там часто есть полезный текст ответа
+            if (ex is Telegram.Bot.Exceptions.ApiRequestException apiEx)
+            {
+                _logger.LogError("🔥 Telegram API Error Code: {Code}, Description: {Desc}", apiEx.ErrorCode, apiEx.Message);
+            }
 
             var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
             await errorResponse.WriteStringAsync("Internal server error");

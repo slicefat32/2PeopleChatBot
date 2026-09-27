@@ -17,7 +17,9 @@ var builder = FunctionsApplication.CreateBuilder(args);
 builder.ConfigureFunctionsWebApplication();
 
 // Configuration
-var botToken = builder.Configuration["BotConfiguration:BotToken"]!;
+var botToken = builder.Configuration["BotConfiguration:BotToken"]
+               ?? builder.Configuration["BotConfiguration__BotToken"]
+               ?? Environment.GetEnvironmentVariable("BotConfiguration_BotToken")!;
 var adminChatIds = builder.Configuration.GetSection("BotConfiguration:AdminChatIds").Get<List<long>>() ?? new List<long>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 

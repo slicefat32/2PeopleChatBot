@@ -21,16 +21,6 @@ var botToken = builder.Configuration["BotConfiguration:BotToken"]
                ?? builder.Configuration["BotConfiguration__BotToken"]
                ?? Environment.GetEnvironmentVariable("BotConfiguration_BotToken")!;
 
-// Выводим информацию о токене в лог (показываем первые 6 символов для проверки)
-if (string.IsNullOrEmpty(botToken))
-{
-    Console.WriteLine("🚨 ПОПЕРЕДЖЕННЯ: BotToken ПУСТИЙ або NULL!");
-}
-else
-{
-    var maskedToken = botToken.Length > 10 ? botToken.Substring(0, 6) + "..." + botToken.Substring(botToken.Length - 4) : "***";
-    Console.WriteLine($"🔍 ПЕРЕВІРКА ТОКЕНА В PROGRAM.CS: довжина = {botToken.Length}, значення = {maskedToken}");
-}
 var adminChatIds = builder.Configuration.GetSection("BotConfiguration:AdminChatIds").Get<List<long>>() ?? new List<long>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 

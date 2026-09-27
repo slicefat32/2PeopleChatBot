@@ -8,10 +8,17 @@ namespace _2PeopleTB.DAL.Data
     {
         public TelegramBotDbContext CreateDbContext(string[] args)
         {
-            // Читаємо appsettings.json з проєкту-стартапу
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var functionsDirectory = Path.Combine(currentDirectory, "2PeopleTB.AzureFunctions");
+            if (!Directory.Exists(functionsDirectory))
+            {
+                functionsDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..", "2PeopleTB.AzureFunctions"));
+            }
+
+            // Читаємо налаштування Azure Functions незалежно від поточної директорії dotnet ef.
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "..", "2PeopleTelegramBot"))
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .SetBasePath(functionsDirectory)
+                .AddJsonFile("local.settings.json", optional: false, reloadOnChange: false)
                 .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<TelegramBotDbContext>();

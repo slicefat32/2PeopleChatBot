@@ -1,22 +1,22 @@
+using Azure.Storage.Queues;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 using Telegram.Bot.Types;
-using _2PeopleTB.AzureFunctions.Services;
 
 namespace _2PeopleTB.AzureFunctions;
 
 public class TelegramWebhook
 {
     private readonly ILogger<TelegramWebhook> _logger;
-    private readonly TelegramUpdateHandler _updateHandler;
+    private readonly QueueClient _updatesQueue;
 
-    public TelegramWebhook(ILogger<TelegramWebhook> logger, TelegramUpdateHandler updateHandler)
+    public TelegramWebhook(ILogger<TelegramWebhook> logger, QueueClient updatesQueue)
     {
         _logger = logger;
-        _updateHandler = updateHandler;
+        _updatesQueue = updatesQueue;
     }
 
     [Function("TelegramWebhook")]
@@ -31,7 +31,7 @@ public class TelegramWebhook
             // Зчитуємо тіло запиту
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-            // Десеріалізуємо Update
+            // Перевіряємо формат до постановки в чергу, щоб не повторювати некоректні запити.
             var update = JsonSerializer.Deserialize<Update>(requestBody, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -45,10 +45,9 @@ public class TelegramWebhook
                 return badResponse;
             }
 
-            // Обробляємо оновлення
-            await _updateHandler.HandleUpdateAsync(update, CancellationToken.None);
-
-            _logger.LogInformation("✅ Update оброблено успішно");
+            await _updatesQueue.CreateIfNotExistsAsync();
+            await _updatesQueue.SendMessageAsync(requestBody);
+            _logger.LogInformation("✅ Update {UpdateId} додано до черги", update.Id);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             return response;

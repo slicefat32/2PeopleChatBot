@@ -12,6 +12,7 @@ namespace _2PeopleTB.DAL.Data
 
         public DbSet<RegisteredUser> RegisteredUsers { get; set; }
         public DbSet<MessageHistory> MessageHistories { get; set; }
+        public DbSet<ProcessedTelegramUpdate> ProcessedTelegramUpdates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,6 +41,12 @@ namespace _2PeopleTB.DAL.Data
                 entity.HasIndex(e => e.FromChatId);
                 entity.HasIndex(e => e.ToChatId);
                 entity.HasIndex(e => e.SentAt);
+            });
+
+            modelBuilder.Entity<ProcessedTelegramUpdate>(entity =>
+            {
+                entity.HasKey(e => e.UpdateId);
+                entity.Property(e => e.UpdateId).ValueGeneratedNever();
             });
         }
     }

@@ -10,6 +10,7 @@ namespace _2PeopleTB.AzureFunctions.Services
         private readonly ITelegramBotClient _botClient;
         private readonly RegisteredUsersService _usersService;
         private readonly MessageHistoryService _messageHistoryService;
+        private readonly ProcessedUpdatesService _processedUpdatesService;
         private readonly List<long> _adminChatIds;
 
         // Зберігання активних чатів (ChatId -> PartnerChatId)
@@ -20,15 +21,37 @@ namespace _2PeopleTB.AzureFunctions.Services
             ITelegramBotClient botClient,
             RegisteredUsersService usersService,
             MessageHistoryService messageHistoryService,
+            ProcessedUpdatesService processedUpdatesService,
             List<long> adminChatIds)
         {
             _botClient = botClient;
             _usersService = usersService;
             _messageHistoryService = messageHistoryService;
+            _processedUpdatesService = processedUpdatesService;
             _adminChatIds = adminChatIds;
         }
 
         public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
+        {
+            if (!await _processedUpdatesService.TryStartProcessingAsync(update.Id, cancellationToken))
+            {
+                Console.WriteLine($"Пропущено повторний UpdateId: {update.Id}");
+                return;
+            }
+
+            try
+            {
+                await HandleNewUpdateAsync(update, cancellationToken);
+                await _processedUpdatesService.CompleteProcessingAsync(update.Id, cancellationToken);
+            }
+            catch
+            {
+                await _processedUpdatesService.AbandonProcessingAsync(update.Id, cancellationToken);
+                throw;
+            }
+        }
+
+        private async Task HandleNewUpdateAsync(Update update, CancellationToken cancellationToken)
         {
             if (update.Message is not { } message)
                 return;
@@ -75,6 +98,7 @@ namespace _2PeopleTB.AzureFunctions.Services
                     cancellationToken: cancellationToken
                 );
             }
+
         }
 
         private async Task HandleMessageRelayAsync(Message message, long chatId, long partnerId, CancellationToken cancellationToken)
@@ -169,9 +193,9 @@ namespace _2PeopleTB.AzureFunctions.Services
                     ActiveChats[user1] = user2;
                     ActiveChats[user2] = user1;
 
-                    await _botClient.SendMessage(message.Chat.Id, $"Успішно з'єднано {user1} та {user2}!", cancellationToken: cancellationToken);
-                    await _botClient.SendMessage(user1, "Ви підключені! Можете розпочати переписку.", cancellationToken: cancellationToken);
-                    await _botClient.SendMessage(user2, "Ви підключені! Можете розпочати переписку.", cancellationToken: cancellationToken);
+                    await TrySendMessageAsync(message.Chat.Id, $"Успішно з'єднано {user1} та {user2}!", cancellationToken);
+                    await TrySendMessageAsync(user1, "Ви підключені! Можете розпочати переписку.", cancellationToken);
+                    await TrySendMessageAsync(user2, "Ви підключені! Можете розпочати переписку.", cancellationToken);
                 }
                 else
                 {
@@ -322,6 +346,18 @@ namespace _2PeopleTB.AzureFunctions.Services
                 "/chat [ID_1] [ID_2] — переписка між двома користувачами",
                 cancellationToken: cancellationToken
             );
+        }
+
+        private async Task TrySendMessageAsync(long chatId, string text, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _botClient.SendMessage(chatId, text, cancellationToken: cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Не вдалося надіслати повідомлення в чат {chatId}: {ex.Message}");
+            }
         }
     }
 }

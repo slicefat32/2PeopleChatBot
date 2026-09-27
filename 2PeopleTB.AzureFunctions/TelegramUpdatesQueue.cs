@@ -1,0 +1,39 @@
+using System.Text.Json;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
+using Telegram.Bot.Types;
+using _2PeopleTB.AzureFunctions.Services;
+
+namespace _2PeopleTB.AzureFunctions;
+
+public class TelegramUpdatesQueue
+{
+    private readonly ILogger<TelegramUpdatesQueue> _logger;
+    private readonly TelegramUpdateHandler _updateHandler;
+
+    public TelegramUpdatesQueue(ILogger<TelegramUpdatesQueue> logger, TelegramUpdateHandler updateHandler)
+    {
+        _logger = logger;
+        _updateHandler = updateHandler;
+    }
+
+    [Function("TelegramUpdatesQueue")]
+    public async Task Run(
+        [QueueTrigger("telegram-updates", Connection = "AzureWebJobsStorage")] string updateJson,
+        CancellationToken cancellationToken)
+    {
+        var update = JsonSerializer.Deserialize<Update>(updateJson, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (update is null)
+        {
+            _logger.LogWarning("Некоректне оновлення в черзі Telegram");
+            return;
+        }
+
+        await _updateHandler.HandleUpdateAsync(update, cancellationToken);
+        _logger.LogInformation("✅ Update {UpdateId} оброблено з черги", update.Id);
+    }
+}

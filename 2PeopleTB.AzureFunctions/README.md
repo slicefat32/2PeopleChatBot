@@ -8,7 +8,8 @@ Telegram бот на базі Azure Functions для з'єднання двох 
 
 ### Основні компоненти
 
-- **TelegramWebhook** - основна функція для обробки вхідних оновлень від Telegram
+- **TelegramWebhook** - швидко перевіряє та додає вхідні оновлення до Azure Storage Queue
+- **TelegramUpdatesQueue** - обробляє оновлення з черги; webhook одразу повертає Telegram `200 OK`
 - **SetWebhook** - допоміжна функція для налаштування webhook URL
 - **DeleteWebhook** - видалення webhook
 - **GetWebhookInfo** - отримання інформації про поточний webhook
@@ -167,6 +168,8 @@ curl "$functionUrl&url=https://2peopletelegrambot.azurewebsites.net/api/telegram
 - `/chat [ID_1] [ID_2]` - переписка між двома користувачами
 
 ## Особливості Azure Functions
+
+Webhook використовує чергу `telegram-updates` у сховищі `AzureWebJobsStorage`. Тому для локального запуску потрібен Azurite або інше сумісне Azure Storage. Оброблені Telegram `UpdateId` зберігаються в таблиці `ProcessedTelegramUpdates`; застосунок створює її автоматично під час запуску, а для керованих EF Core міграцій також додано міграцію `AddProcessedTelegramUpdates`.
 
 ### Переваги webhook підходу
 

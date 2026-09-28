@@ -23,8 +23,21 @@ namespace _2PeopleTB.DAL.Data
 
             var optionsBuilder = new DbContextOptionsBuilder<TelegramBotDbContext>();
 
-            // Беремо connection string з appsettings.json
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            // Azure Functions keeps local configuration in the Values object. In Azure,
+            // the same setting is available as the ConnectionStrings__DefaultConnection
+            // environment variable.
+            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? configuration["ConnectionStrings:DefaultConnection"]
+                ?? configuration["Values:ConnectionStrings:DefaultConnection"];
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "The DefaultConnection connection string is missing. Set " +
+                    "ConnectionStrings__DefaultConnection, or add " +
+                    "Values:ConnectionStrings:DefaultConnection to local.settings.json.");
+            }
+
             optionsBuilder.UseSqlServer(connectionString);
 
             return new TelegramBotDbContext(optionsBuilder.Options);

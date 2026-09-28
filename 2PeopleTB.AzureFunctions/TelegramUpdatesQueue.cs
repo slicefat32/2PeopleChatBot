@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using _2PeopleTB.AzureFunctions.Services;
@@ -9,12 +10,12 @@ namespace _2PeopleTB.AzureFunctions;
 public class TelegramUpdatesQueue
 {
     private readonly ILogger<TelegramUpdatesQueue> _logger;
-    private readonly TelegramUpdateHandler _updateHandler;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public TelegramUpdatesQueue(ILogger<TelegramUpdatesQueue> logger, TelegramUpdateHandler updateHandler)
+    public TelegramUpdatesQueue(ILogger<TelegramUpdatesQueue> logger, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
-        _updateHandler = updateHandler;
+        _scopeFactory = scopeFactory;
     }
 
     [Function("TelegramUpdatesQueue")]
@@ -36,7 +37,10 @@ public class TelegramUpdatesQueue
                 return;
             }
 
-            await _updateHandler.HandleUpdateAsync(update, cancellationToken);
+            using var scope = _scopeFactory.CreateScope();
+            var updateHandler = scope.ServiceProvider.GetRequiredService<TelegramUpdateHandler>();
+
+            await updateHandler.HandleUpdateAsync(update, cancellationToken);
             _logger.LogInformation("✅ Update {UpdateId} оброблено з черги", update.Id);
         }
         catch (Exception ex)

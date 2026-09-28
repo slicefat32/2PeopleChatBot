@@ -1,5 +1,6 @@
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Azure.Storage.Queues;
+using Azure.Storage.Queues.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Azure.Functions.Worker.OpenTelemetry;
@@ -26,15 +27,16 @@ var adminChatIds = builder.Configuration.GetSection("BotConfiguration:AdminChatI
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 var storageConnectionString = builder.Configuration["AzureWebJobsStorage"]!;
 
-Console.WriteLine("Connection:");
-Console.WriteLine(connectionString);
 // Database
 builder.Services.AddDbContext<TelegramBotDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Telegram Bot Client
 builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
-builder.Services.AddSingleton(new QueueClient(storageConnectionString, "telegram-updates"));
+builder.Services.AddSingleton(new QueueClient(
+    storageConnectionString,
+    "telegram-updates",
+    new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 }));
 
 // DAL Services
 builder.Services.AddScoped<RegisteredUsersService>();
@@ -70,8 +72,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotDbContext>();
-
-        Console.WriteLine(connectionString);
 
         var databaseCreated = await dbContext.Database.EnsureCreatedAsync();
         if (!databaseCreated)
